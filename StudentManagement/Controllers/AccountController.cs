@@ -12,6 +12,7 @@ using StudentManagement.Models.AccountViewModel;
 
 namespace StudentManagement.Controllers
 {
+    //meow
     [Authorize]
     public class AccountController : Controller
     {

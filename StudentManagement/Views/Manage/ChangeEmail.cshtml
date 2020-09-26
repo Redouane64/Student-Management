@@ -1,0 +1,27 @@
+﻿@model StudentManagement.Models.ManageViewModel.ChangeEmailViewModel
+<h2>Change Email!</h2>
+<div class="col-md-10 offset-md-1">
+    <form asp-controller="Manage" asp-action="ChangeEmail" method="post" class="form-horizontal">
+        <div asp-validation-summary="All" class="text-danger"></div>
+
+        <div class="form-group">
+            <label asp-for="NewEmail"></label>
+            <input asp-for="NewEmail" class="form-control" />
+            <span asp-validation-for="NewEmail" class="text-danger"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="Token"></label>
+            <input asp-for="Token" class="form-control" />
+            <span asp-validation-for="Token" class="text-danger"></span>
+        </div>
+        <div class="form-group">
+            <div class="col-md-offset-2 col-md-10">
+                <button type="submit" class="btn btn-primary btn-block">Change Email</button>
+            </div>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+}

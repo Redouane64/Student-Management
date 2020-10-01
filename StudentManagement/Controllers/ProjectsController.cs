@@ -3,22 +3,28 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using StudentManagement.Data;
 using StudentManagement.Models;
+using StudentManagement.Service;
 
 namespace StudentManagement.Controllers
 {
-    [Authorize]
+    [Authorize(Roles ="Teacher")]
     public class ProjectsController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly UserManager<User> userManager;
+        
 
-        public ProjectsController(ApplicationDbContext context)
+        public ProjectsController(ApplicationDbContext context, UserManager<User> userManager)
         {
             _context = context;
+            this.userManager = userManager;
+       
         }
 
         // GET: Projects
@@ -80,7 +86,7 @@ namespace StudentManagement.Controllers
             }
 
             var project = await _context.Projects.FindAsync(id);
-            if (project == null)
+            if (project == null )
             {
                 return NotFound();
             }

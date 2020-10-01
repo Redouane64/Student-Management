@@ -1,11 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -19,7 +22,7 @@ namespace StudentManagement
     {
         public Startup(IConfiguration configuration)
         {
-            Configuration = configuration;
+            Configuration = configuration;     
         }
 
         public IConfiguration Configuration { get; }
@@ -37,6 +40,16 @@ namespace StudentManagement
                 .AddDefaultTokenProviders();
             services.AddMvc();
             services.AddRazorPages();
+            services.AddAuthentication();
+            services.AddAuthorization(options =>
+            {
+                options.AddPolicy("MessageAuthor", config =>
+                    config.AddRequirements(new IsMessageAuthorOrAdminAuthorizaationPolicy()));
+                options.AddPolicy("Admin", config =>
+                    config.RequireRole(UserRoles.Administrators));
+            });
+
+            services.AddScoped<IAuthorizationHandler, IsMessageAuthorOrAdminPolicyHandler>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -64,8 +77,34 @@ namespace StudentManagement
             {
                 endpoints.MapControllerRoute(
                     name: "default",
-                    pattern: "{controller=Projects}/{action=Index}/{id?}");
+                    pattern: "{controller=Home}/{action=Index}/{id?}");
             });
         }
+    }
+
+    public class IsMessageAuthorOrAdminAuthorizaationPolicy : IAuthorizationRequirement
+    {
+    }
+
+    public class IsMessageAuthorOrAdminPolicyHandler : AuthorizationHandler<IsMessageAuthorOrAdminAuthorizaationPolicy, int>
+    {
+        private readonly ApplicationDbContext dataContext;
+
+        public IsMessageAuthorOrAdminPolicyHandler(ApplicationDbContext context)
+        {
+            this.dataContext = context;
+        }
+
+        protected override async Task HandleRequirementAsync(AuthorizationHandlerContext context, IsMessageAuthorOrAdminAuthorizaationPolicy requirement, int resource)
+        {
+            if (context.User.IsInRole(UserRoles.Administrators))
+            {
+                context.Succeed(requirement);
+                return;
+            }
+
+            var userId = context.User.FindFirstValue(ClaimTypes.NameIdentifier);
+        }
+
     }
 }
